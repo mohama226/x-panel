@@ -10,7 +10,7 @@ echo "======================"
 
 INSTALL_DIR="/opt/x-panel"
 
-REPO="https://github.com/USERNAME/x-panel.git"
+REPO="https://github.com/mohama226/x-panel.git"
 
 
 
