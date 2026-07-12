@@ -2,25 +2,24 @@
 
 set -e
 
-echo "======================"
-echo "   X-PANEL INSTALL"
-echo "======================"
-
-
+APP_NAME="x-panel"
 INSTALL_DIR="/opt/x-panel"
 
-ZIP_URL="https://YOUR-DOMAIN/x-panel/x-panel.zip"
+ZIP_URL="https://YOUR_DOMAIN.com/x-panel/x-panel.zip"
 
+
+echo "========================="
+echo "      X-PANEL INSTALL"
+echo "========================="
 
 
 if [ "$EUID" -ne 0 ]; then
-    echo "Run as root"
+    echo "Please run as root"
     exit 1
 fi
 
 
-echo "[1/6] Installing packages"
-
+echo "[1/8] Installing requirements..."
 
 apt update
 
@@ -30,21 +29,24 @@ python3-pip \
 python3-venv \
 postgresql \
 postgresql-contrib \
-unzip \
-curl
+curl \
+unzip
 
 
+echo "[2/8] Downloading package..."
 
-echo "[2/6] Downloading ZIP"
+
+rm -rf /tmp/x-panel
+mkdir -p /tmp/x-panel
 
 
-rm -rf /tmp/x-panel.zip
+curl -L "$ZIP_URL" -o /tmp/x-panel.zip
+
+
+echo "[3/8] Extracting..."
+
+
 rm -rf $INSTALL_DIR
-
-
-curl -L $ZIP_URL -o /tmp/x-panel.zip
-
-
 
 mkdir -p $INSTALL_DIR
 
@@ -52,12 +54,11 @@ mkdir -p $INSTALL_DIR
 unzip /tmp/x-panel.zip -d /tmp/x-panel
 
 
-
-cp -r /tmp/x-panel/* $INSTALL_DIR
-
+cp -r /tmp/x-panel/x-panel/* $INSTALL_DIR
 
 
-echo "[3/6] Python setup"
+
+echo "[4/8] Creating Python environment..."
 
 
 cd $INSTALL_DIR
@@ -77,23 +78,37 @@ pip install -r requirements.txt
 
 
 
-echo "[4/6] PostgreSQL"
+echo "[5/8] Setting PostgreSQL..."
 
 
 sudo -u postgres psql <<EOF
 
-CREATE DATABASE xpanel;
+DO \$\$
+
+BEGIN
+
+IF NOT EXISTS (
+SELECT FROM pg_roles WHERE rolname='xpanel'
+)
+
+THEN
 
 CREATE USER xpanel WITH PASSWORD 'xpanel';
 
-GRANT ALL PRIVILEGES ON DATABASE xpanel TO xpanel;
+END IF;
+
+END
+
+\$\$;
+
+
+CREATE DATABASE xpanel OWNER xpanel;
 
 EOF
 
 
 
-
-echo "[5/6] Service"
+echo "[6/8] Installing service..."
 
 
 cp systemd/x-panel.service /etc/systemd/system/x-panel.service
@@ -101,25 +116,43 @@ cp systemd/x-panel.service /etc/systemd/system/x-panel.service
 
 systemctl daemon-reload
 
+
 systemctl enable x-panel
+
 
 systemctl restart x-panel
 
 
 
 
-echo "[6/6] Finished"
+echo "[7/8] Installing command..."
+
+
+cp x-panel.sh /usr/local/bin/x-panel
+
+
+chmod +x /usr/local/bin/x-panel
+
+
+
+
+echo "[8/8] Complete"
 
 
 echo "
-========================
- X-PANEL INSTALLED
 
- URL:
- http://SERVER-IP:2096
+================================
 
- Command:
- x-panel
+X-PANEL INSTALLED
 
-========================
+Panel:
+http://SERVER-IP:2096
+
+
+Command:
+
+x-panel
+
+================================
+
 "
