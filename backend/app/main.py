@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 
 from pathlib import Path
 
@@ -9,8 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 
 app = FastAPI(
-    title="X-PANEL",
-    version="0.1"
+    title="X-PANEL"
 )
 
 
@@ -19,23 +17,24 @@ templates = Jinja2Templates(
 )
 
 
+
 @app.get("/")
-async def home(request: Request):
+async def index(request: Request):
 
     return templates.TemplateResponse(
         "index.html",
         {
-            "request": request,
-            "title": "X-PANEL"
+            "request":request
         }
     )
 
 
-@app.get("/status")
-async def status():
+
+@app.get("/api/status")
+def status():
 
     return {
-        "panel": "x-panel",
-        "status": "running",
-        "version": "0.1"
+        "name":"x-panel",
+        "status":"running",
+        "version":"0.1"
     }
