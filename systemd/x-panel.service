@@ -1,6 +1,6 @@
 [Unit]
 
-Description=X-PANEL VPN Management Panel
+Description=X-PANEL
 
 After=network.target
 
