@@ -1,0 +1,23 @@
+[Unit]
+
+Description=X-PANEL VPN Management Panel
+
+After=network.target
+
+
+
+[Service]
+
+WorkingDirectory=/opt/x-panel/backend
+
+ExecStart=/opt/x-panel/venv/bin/python run.py
+
+Restart=always
+
+User=root
+
+
+
+[Install]
+
+WantedBy=multi-user.target
